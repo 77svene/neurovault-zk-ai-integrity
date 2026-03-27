@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroVault | ZK-Verified AI Model Integrity</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js" integrity="sha384-7u8q5q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8......"></script>
+    <script src="https://cdn.jsdelivr.net/npm/snarkjs@0.7.5/dist/snarkjs.min.js" integrity="sha384-7u8q5q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8q8......"></script>
+    <style>
+        :root {
+            --primary: #00f0ff;
+            --secondary: #7000ff;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff0055;
+            --bg: #0a0a0f;
+            --card: #12121a;
+            --text: #e0e0e0;
+            --text-muted: #888899;
+            --border: #2a2a3a;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .status-badge.connected { background: rgba(0, 255, 136, 0.15); color: var(--success); }
+        .status-badge.disconnected { background: rgba(255, 0, 85, 0.15); color: var(--danger); }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            transition: width 0.3s ease;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .table th, .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .table th {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+        .table td {
+            font-size: 0.875rem;
+        }
+        .table tr:hover {
+            background: rgba(0, 240, 255, 0.05);
+        }
+        .hash {
+            font-family: 'SF Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--primary);
+            word-break: break-all;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+        .btn-secondary:hover {
+            background: #3a3a4a;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.875rem;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .verification-result {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+        }
+        .verification-result.success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+        .verification-result.failure {
+            background: rgba(255, 0, 85, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .score-gauge {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(var(--success) 0%, var(--border) 0%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            position: relative;
+        }
+        .score-gauge::before {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: var(--card);
+            border-radius: 50%;
+        }
+        .score-value {
+            position: relative;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .score-label {
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .filter-select {
+            padding: 0.5rem 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.875rem;
+        }
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-success { background: rgba(0, 255, 136, 0.15); color: var(--success); }
+        .badge-danger { background: rgba(255, 0, 85, 0.15); color: var(--danger); }
+        .badge-warning { background: rgba(255, 170, 0, 0.15); color: var(--warning); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">NeuroVault</div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <span id="connectionStatus" class="status-badge disconnected">Disconnected</span>
+                <button id="connectBtn" class="btn btn-primary">Connect Wallet</button>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Model Integrity Score</span>
+                </div>
+                <div class="score-gauge" id="integrityGauge">
+                    <span class="score-value" id="integrityScore">0%</span>
+                </div>
+                <div class="score-label">Verified Model Fidelity</div>
+                <div class="progress-bar" style="margin-top: 1rem;">
+                    <div class="progress-fill" id="integrityProgress" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Registered Models</span>
+                </div>
+                <div class="stat-value" id="modelCount">0</div>
+                <div class="stat-label">Active on-chain</div>
+                <button id="refreshModelsBtn" class="btn btn-secondary" style="margin-top: 1rem;">Refresh</button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Verification History</span>
+                </div>
+                <div class="stat-value" id="verificationCount">0</div>
+                <div class="stat-label">Total proofs verified</div>
+                <button id="refreshVerificationsBtn" class="btn btn-secondary" style="margin-top: 1rem;">Refresh</button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Agent Status</span>
+                </div>
+                <div class="stat-value" id="agentStatus">Unknown</div>
+                <div class="stat-label">Current operational state</div>
+                <div style="margin-top: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Last Trade</label>
+                        <div class="hash" id="lastTrade">None</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Verification</label>
+                        <div class="hash" id="lastVerification">None</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Registered Model Registry</span>
+                <button id="registerModelBtn" class="btn btn-primary">Register New Model</button>
+            </div>
+            <div id="modelRegistry">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>No models registered yet</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header">
+                <span class="card-title">Verification History</span>
+                <div class="filter-bar">
+                    <select id="statusFilter" class="filter-select">
+                        <option value="all">All Status</option>
+                        <option value="success">Success</option>
+                        <option value="failure">Failure</option>
+                    </select>
+                </div>
+            </div>
+            <div id="verificationHistory">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔍</div>
+                    <p>No verifications recorded yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: var(--primary);">Register New Model</h3>
+                <button class="modal-close" onclick="closeModal('registerModal')">&times;</button>
+            </div>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label">Model Name</label>
+                    <input type="text" class="form-input" id="modelName" required placeholder="e.g., TradingAgent-v1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Model Hash (SHA256)</label>
+                    <input type="text" class="form-input" id="modelHash" required placeholder="0x..." pattern="^0x[a-fA-F0-9]{64}$">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-input" id="modelDescription" rows="3" placeholder="Brief description of the model"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('registerModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Register Model</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="verifyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: var(--primary);">Verify Model Proof</h3>
+                <button class="modal-close" onclick="closeModal('verifyModal')">&times;</button>
+            </div>
+            <form id="verifyForm">
+                <div class="form-group">
+                    <label class="form-label">Model ID</label>
+                    <input type="text" class="form-input" id="verifyModelId" required placeholder="Model ID from registry">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Proof JSON File</label>
+                    <input type="file" class="form-input" id="proofFile" accept=".json" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Public Inputs JSON File</label>
+                    <input type="file" class="form-input" id="publicInputsFile" accept=".json" required>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('verifyModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Verify Proof</button>
+                </div>
+            </form>
+            <div id="verifyResult" class="verification-result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const CONTRACT_ADDRESSES = {
+            ModelIntegrityRegistry: '0x0000000000000000000000000000000000000000',
+            AgentController: '0x0000000000000000000000000000000000000000'
+        };
+
+        let provider = null;
+        let signer = null;
+        let registryContract = null;
+        let controllerContract = null;
+        let models = [];
+        let verifications = [];
+
+        const ABI = {
+            ModelIntegrityRegistry: [
+                "function registerModel(string memory name, bytes32 modelHash, string memory description) external returns (uint256)",
+                "function getModel(uint256 modelId) external view returns (string memory name, bytes32 modelHash, string memory description, uint256 registeredAt, bool isActive)",
+                "function getModels() external view returns (uint256[] memory)",
+                "function getVerificationHistory(uint256 modelId) external view returns (uint256[] memory)",
+                "event ModelRegistered(uint256 indexed modelId, string name, bytes32 modelHash)",
+                "event VerificationSubmitted(uint256 indexed modelId, bytes32 indexed proofHash, bool verified)"
+            ],
+            AgentController: [
+                "function submitTradeProof(uint256 modelId, bytes memory proof, bytes[] memory publicInputs) external returns (uint256)",
+                "function getTradeProofs(uint256 modelId) external view returns (uint256[] memory)"
+            ]
+        };
+
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    signer = await provider.getSigner();
+                    const address = await signer.getAddress();
+                    
+                    registryContract = new ethers.Contract(CONTRACT_ADDRESSES.ModelIntegrityRegistry, ABI.ModelIntegrityRegistry, provider);
+                    controllerContract = new ethers.Contract(CONTRACT_ADDRESSES.AgentController, ABI.AgentController, provider);
+                    
+                    document.getElementById('connectionStatus').className = 'status-badge connected';
+                    document.getElementById('connectionStatus').textContent = 'Connected';
+                    document.getElementById('connectBtn').textContent = address.slice(0, 6) + '...' + address.slice(-4);
+                    
+                    await loadModels();
+                    await loadVerifications();
+                    updateIntegrityScore();
+                } catch (error) {
+                    console.error('Connection error:', error);
+                    alert('Failed to connect wallet: ' + error.message);
+                }
+            } else {
+                alert('Please install MetaMask or another Web3 wallet');
+            }
+        }
+
+        async function loadModels() {
+            try {
+                const modelIds = await registryContract.getModels();
+                models = [];
+                
+                for (const id of modelIds) {
+                    const modelData = await registryContract.getModel(id);
+                    models.push({
+                        id: id.toString(),
+                        name: modelData[0],
+                        hash: '0x' + modelData[1].slice(2),
+                        description: modelData[2],
+                        registeredAt: modelData[3].toString(),
+                        isActive: modelData[4]
+                    });
+                }
+                
+                renderModels();
+                document.getElementById('modelCount').textContent = models.length;
+            } catch (error) {
+                console.error('Error loading models:', error);
+            }
+        }
+
+        function renderModels() {
+            const container = document.getElementById('modelRegistry');
+            
+            if (models.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>No models registered yet</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Model ID</th>
+                            <th>Name</th>
+                            <th>Hash</th>
+                            <th>Status</th>
+                            <th>Registered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${models.map(model => `
+                            <tr>
+                                <td>${model.id}</td>
+                                <td>${model.name}</td>
+                                <td class="hash">${model.hash.slice(0, 10)}...${model.hash.slice(-8)}</td>
+                                <td><span class="badge ${model.isActive ? 'badge-success' : 'badge-danger'}">${model.isActive ? 'Active' : 'Inactive'}</span></td>
+                                <td>${new Date(parseInt(model.registeredAt) * 1000).toLocaleDateString()}</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="verifyModel('${model.id}')">Verify</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function loadVerifications() {
+            try {
+                verifications = [];
+                
+                for (const model of models) {
+                    const proofIds = await registryContract.getVerificationHistory(model.id);
+                    
+                    for (const proofId of proofIds) {
+                        const proofData = await registryContract.getProof(proofId);
+                        verifications.push({
+                            id: proofId.toString(),
+                            modelId: model.id,
+                            modelHash: proofData[0],
+                            verified: proofData[1],
+                            timestamp: proofData[2].toString(),
+                            txHash: proofData[3]
+                        });
+                    }
+                }
+                
+                renderVerifications();
+                document.getElementById('verificationCount').textContent = verifications.length;
+            } catch (error) {
+                console.error('Error loading verifications:', error);
+            }
+        }
+
+        function renderVerifications() {
+            const container = document.getElementById('verificationHistory');
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            let filteredVerifications = verifications;
+            if (statusFilter !== 'all') {
+                filteredVerifications = verifications.filter(v => 
+                    statusFilter === 'success' ? v.verified : !v.verified
+                );
+            }
+            
+            if (filteredVerifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <p>No verifications recorded yet</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Proof ID</th>
+                            <th>Model ID</th>
+                            <th>Model Hash</th>
+                            <th>Status</th>
+                            <th>Timestamp</th>
+                            <th>Transaction</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredVerifications.map(verification => `
+                            <tr>
+                                <td>${verification.id}</td>
+                                <td>${verification.modelId}</td>
+                                <td class="hash">${verification.modelHash.slice(0, 10)}...${verification.modelHash.slice(-8)}</td>
+                                <td><span class="badge ${verification.verified ? 'badge-success' : 'badge-danger'}">${verification.verified ? 'Verified' : 'Failed'}</span></td>
+                                <td>${new Date(parseInt(verification.timestamp) * 1000).toLocaleString()}</td>
+                                <td><a href="https://sepolia.etherscan.io/tx/${verification.txHash}" target="_blank" style="color: var(--primary);">${verification.txHash.slice(0, 10)}...${verification.txHash.slice(-8)}</a></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function updateIntegrityScore() {
+            if (verifications.length === 0) {
+                document.getElementById('integrityScore').textContent = '0%';
+                document.getElementById('integrityProgress').style.width = '0%';
+                document.getElementById('integrityGauge').style.background = 'conic-gradient(var(--border) 0%, var(--border) 0%)';
+                return;
+            }
+            
+            const successfulVerifications = verifications.filter(v => v.verified).length;
+            const score = Math.round((successfulVerifications / verifications.length) * 100);
+            
+            document.getElementById('integrityScore').textContent = score + '%';
+            document.getElementById('integrityProgress').style.width = score + '%';
+            document.getElementById('integrityGauge').style.background = `conic-gradient(var(--success) ${score}%, var(--border) ${score}%)`;
+        }
+
+        async function registerModel(e) {
+            e.preventDefault();
+            
+            const modelName = document.getElementById('modelName').value;
+            const modelHash = document.getElementById('modelHash').value;
+            const modelDescription = document.getElementById('modelDescription').value;
+            
+            try {
+                const tx = await registryContract.registerModel(modelName, modelHash, modelDescription);
+                await tx.wait();
+                
+                alert('Model registered successfully!');
+                closeModal('registerModal');
+                document.getElementById('registerForm').reset();
+                await loadModels();
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('Failed to register model: ' + error.message);
+            }
+        }
+
+        async function verifyModel(modelId) {
+            document.getElementById('verifyModelId').value = modelId;
+            document.getElementById('verifyResult').style.display = 'none';
+            openModal('verifyModal');
+        }
+
+        async function submitVerification(e) {
+            e.preventDefault();
+            
+            const modelId = document.getElementById('verifyModelId').value;
+            const proofFile = document.getElementById('proofFile').files[0];
+            const publicInputsFile = document.getElementById('publicInputsFile').files[0];
+            
+            if (!proofFile || !publicInputsFile) {
+                alert('Please select both proof and public inputs files');
+                return;
+            }
+            
+            try {
+                const proofText = await proofFile.text();
+                const publicInputsText = await publicInputsFile.text();
+                
+                const proof = JSON.parse(proofText);
+                const publicInputs = JSON.parse(publicInputsText);
+                
+                const isValid = await snarkjs.groth16.verify(
+                    await getVerificationKey(),
+                    publicInputs,
+                    proof
+                );
+                
+                const resultDiv = document.getElementById('verifyResult');
+                resultDiv.style.display = 'block';
+                
+                if (isValid) {
+                    resultDiv.className = 'verification-result success';
+                    resultDiv.innerHTML = `
+                        <strong>✓ Proof Verified Successfully</strong><br>
+                        The model integrity proof is valid. The agent's weights match the registered hash.
+                    `;
+                    
+                    const tx = await registryContract.submitTradeProof(
+                        modelId,
+                        proof.pi_a,
+                        [proof.pi_b, proof.pi_c, ...publicInputs]
+                    );
+                    await tx.wait();
+                    
+                    await loadVerifications();
+                    updateIntegrityScore();
+                } else {
+                    resultDiv.className = 'verification-result failure';
+                    resultDiv.innerHTML = `
+                        <strong>✗ Proof Verification Failed</strong><br>
+                        The model integrity proof is invalid. The agent's weights may have been tampered with.
+                    `;
+                }
+            } catch (error) {
+                console.error('Verification error:', error);
+                const resultDiv = document.getElementById('verifyResult');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'verification-result failure';
+                resultDiv.innerHTML = `
+                    <strong>✗ Verification Error</strong><br>
+                    ${error.message}
+                `;
+            }
+        }
+
+        async function getVerificationKey() {
+            try {
+                const response = await fetch('circuits/build/modelProof.vk.json');
+                return await response.json();
+            } catch (error) {
+                console.error('Error loading verification key:', error);
+                throw new Error('Could not load verification key. Make sure the circuit was compiled.');
+            }
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        document.getElementById('connectBtn').addEventListener('click', connectWallet);
+        document.getElementById('registerModelBtn').addEventListener('click', () => openModal('registerModal'));
+        document.getElementById('refreshModelsBtn').addEventListener('click', loadModels);
+        document.getElementById('refreshVerificationsBtn').addEventListener('click', loadVerifications);
+        document.getElementById('statusFilter').addEventListener('change', renderVerifications);
+        document.getElementById('registerForm').addEventListener('submit', registerModel);
+        document.getElementById('verifyForm').addEventListener('submit', submitVerification);
+
+        window.closeModal = closeModal;
+        window.verifyModel = verifyModel;
+
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
