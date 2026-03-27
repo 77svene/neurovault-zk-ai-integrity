@@ -1,0 +1,29 @@
+{
+  "name": "neurovault",
+  "version": "1.0.0",
+  "description": "ZK-Verified AI Model Integrity for Autonomous Trading - Proof-of-Model-Fidelity",
+  "main": "index.js",
+  "scripts": {
+    "build:circuit": "circom circuits/model_fidelity.circom --wasm --r1cs --output circuits/build",
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js --network localhost",
+    "verify": "hardhat verify",
+    "generate:proof": "node scripts/generateProof.js",
+    "verify:proof": "node scripts/verifyProof.js"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "5.0.2",
+    "circomlib": "2.0.5",
+    "circomlibjs": "0.1.7",
+    "ethers": "6.13.2",
+    "snarkjs": "0.7.5"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "5.0.0",
+    "hardhat": "2.22.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
