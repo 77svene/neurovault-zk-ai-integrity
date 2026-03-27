@@ -1,0 +1,7 @@
+Just shipped NeuroVault: ZK-Verified AI Model Integrity for Autonomous Trading for AI Trading Agents ERC-8004 | lablab.ai | $55,000 SURGE token | deadline April 12 2026!
+
+First implementation of Proof-of-Model-Fidelity (PoMF) to verify AI trading agent weights haven't been adversarially modified without revealing the model itself.
+
+https://github.com/77svene/neurovault-zk-ai-integrity
+
+#hackathon #AI #Web3 #DeFi @lablabai

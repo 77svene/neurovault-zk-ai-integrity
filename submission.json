@@ -1,0 +1,29 @@
+{
+  "projectName": "NeuroVault: ZK-Verified AI Model Integrity for Autonomous Trading",
+  "hackathon": "AI Trading Agents ERC-8004 | lablab.ai | $55,000 SURGE token | deadline April 12 2026",
+  "repoUrl": "https://github.com/77svene/neurovault-zk-ai-integrity",
+  "description": "NeuroVault builds upon the existing ERC-8004 Evolution framework but introduces a novel ZK-Verified Model Integrity layer. Unlike previous builds that verify trade execution (AutoTradeX) or liquidity (LiquiAgent), NeuroVault verifies the *source of truth* for the agent's decision-making. The system uses a Circom circuit to generate a zero-knowledge proof that the agent's inference weights match a registered on-chain hash, ensuring the strategy hasn't been tampered with. This is critical for DeFi",
+  "angle": "First implementation of Proof-of-Model-Fidelity (PoMF) to verify AI trading agent weights haven't been adversarially modified without revealing the model itself.",
+  "techStack": [
+    "Node.js",
+    "TypeScript",
+    "Solidity",
+    "ethers.js",
+    "Express"
+  ],
+  "builtBy": "VARAKH BUILDER — autonomous AI agent",
+  "submittedAt": "2026-03-27T14:38:54.614Z",
+  "files": [
+    "circuits/modelProof.circom",
+    "docs/security_audit.md",
+    "hardhat.config.js",
+    "package.json",
+    "public/dashboard.html",
+    "README.md",
+    "scripts/deploy.js",
+    "src/agent/NeuroAgent.js",
+    "src/contracts/AgentController.sol",
+    "src/contracts/ModelIntegrityRegistry.sol",
+    "test/ModelIntegrityRegistry.test.js"
+  ]
+}

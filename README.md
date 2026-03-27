@@ -1,606 +1,122 @@
-# NeuroVault: ZK-Verified AI Model Integrity for Autonomous Trading
+# 🧠 NeuroVault: ZK-Verified AI Model Integrity for Autonomous Trading
 
-**Proof-of-Model-Fidelity (PoMF) Protocol**  
-**Version:** 1.0.0  
-**License:** MIT  
-**Target:** AI Trading Agents | lablab.ai | $55,000 SURGE token  
-**Deadline:** April 12, 2026
+**Verifying AI trading agent weights on-chain without revealing proprietary IP via Zero-Knowledge Proofs.**
 
----
+[![Hackathon](https://img.shields.io/badge/Hackathon-AI%20Trading%20Agents%20ERC-8004-blue)](https://lablab.ai)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.x-blue)](https://soliditylang.org/)
+[![Circom](https://img.shields.io/badge/Circom-ZK%20Circuit-orange)](https://github.com/iden3/circom)
+[![Node.js](https://img.shields.io/badge/Node.js-18.x-green)](https://nodejs.org/)
 
-## 🎯 What is NeuroVault?
+## 🚀 About
+NeuroVault is the first implementation of **Proof-of-Model-Fidelity (PoMF)** for autonomous trading agents. It builds upon the ERC-8004 Evolution framework to introduce a novel ZK-Verified Model Integrity layer. Unlike previous builds that verify trade execution or liquidity, NeuroVault verifies the *source of truth* for the agent's decision-making.
 
-NeuroVault is the first implementation of **Proof-of-Model-Fidelity (PoMF)** — a zero-knowledge verification layer that proves an AI trading agent's weights match a registered on-chain hash without revealing the model itself.
+In DeFi, black-box AI agents pose systemic risk. NeuroVault ensures the strategy hasn't been tampered with by generating a zero-knowledge proof that the agent's inference weights match a registered on-chain hash. This creates a trustless environment where agents can be audited for strategy integrity without exposing proprietary IP.
 
-### The Problem
+## 🛑 Problem
+1.  **Black-Box Risk:** Autonomous trading agents operate as opaque systems. If an agent's weights are adversarially modified, it can drain liquidity or manipulate markets.
+2.  **IP Leakage:** Traditional verification requires revealing model weights, exposing proprietary trading strategies.
+3.  **Trust Assumption:** Current ERC-8004 implementations verify trade execution but not the underlying model state.
 
-Black-box AI agents in DeFi pose systemic risk:
-- **Weight Tampering:** Adversaries can modify model weights to manipulate trades
-- **Strategy Theft:** Proprietary trading strategies are exposed through reverse engineering
-- **Trust Deficit:** No way to verify an agent's strategy integrity without exposing IP
+## ✅ Solution
+NeuroVault introduces a **ZK-Verified Model Integrity Layer**:
+*   **Proof-of-Model-Fidelity (PoMF):** Uses a Circom circuit to generate a ZK proof that local model weights match the on-chain registered hash.
+*   **Privacy-Preserving:** The actual weights are never revealed on-chain; only the proof of match is submitted.
+*   **Settlement Gate:** The `AgentController` contract verifies the proof before allowing a trade to settle.
+*   **ERC-8004 Compatible:** Integrates seamlessly with the existing Evolution framework.
 
-### The Solution
+## 🏗️ Architecture
 
-NeuroVault uses zk-SNARKs to generate a cryptographic proof that:
-1. The agent's inference weights match a registered hash
-2. The strategy hasn't been adversarially modified
-3. The proof can be verified on-chain without revealing the model
+```mermaid
+graph TD
+    subgraph "Local Agent Environment"
+        A[NeuroAgent.js] --> B{Model Weights}
+        B --> C[Circom Circuit]
+        C --> D[Generate ZK Proof]
+        D --> E[Trade Execution]
+    end
 
----
+    subgraph "Blockchain Layer"
+        F[ModelIntegrityRegistry.sol]
+        G[AgentController.sol]
+    end
 
-## 🏗️ Architecture Overview
+    subgraph "User / Auditor"
+        H[Dashboard]
+    end
 
+    E --> I[Submit Proof + Trade]
+    I --> G
+    G --> J{Verify Proof}
+    J -->|Valid| K[Settle Trade]
+    J -->|Invalid| L[Revert]
+    
+    B -.->|Hash Registration| F
+    H -.->|View Proofs| F
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         NEUROVAULT SYSTEM                           │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────────────┐  │
-│  │   Agent      │    │   Circuit    │    │   Registry           │  │
-│  │   (Local)    │───▶│   (Circom)   │───▶│   (On-Chain)         │  │
-│  │              │    │              │    │                      │  │
-│  │ - Weights    │    │ - SHA256     │    │ - Model Registration │  │
-│  │ - Strategy   │    │ - Padding    │    │ - Proof Verification │  │
-│  │ - Execution  │    │ - Proof Gen  │    │ - Integrity Checks   │  │
-│  └──────────────┘    └──────────────┘    └──────────────────────┘  │
-│         │                   │                      │                │
-│         ▼                   ▼                      ▼                │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │                    AgentController.sol                        │  │
-│  │  - Trade Settlement Gatekeeper                                │  │
-│  │  - Proof Verification Before Execution                        │  │
-│  │  - Nonce + Timestamp Validation                               │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
 
----
+## 🛠️ Tech Stack
+*   **Smart Contracts:** Solidity (Hardhat)
+*   **Zero-Knowledge:** Circom, SnarkJS
+*   **Agent Logic:** Node.js
+*   **Framework:** ERC-8004 Evolution
+*   **Testing:** Mocha/Chai
 
-## 📦 Installation
+## 📦 Setup Instructions
 
-### Prerequisites
+### 1. Prerequisites
+*   Node.js v18+
+*   Circom v2.1.0+ (Install via `npm install -g circom`)
+*   Hardhat
+*   Private Key & RPC URL
 
+### 2. Installation
 ```bash
-# Node.js >= 18.0.0
-node --version
-
-# Hardhat for contract compilation
-npm install -D hardhat @nomicfoundation/hardhat-toolbox
-
-# Circom for circuit compilation
-npm install -g circomlib circomlibjs snarkjs
-
-# Git for repository management
-git --version
-```
-
-### Clone Repository
-
-```bash
-git clone https://github.com/neurovault/neurovault.git
-cd neurovault
-```
-
-### Install Dependencies
-
-```bash
+git clone https://github.com/77svene/neurovault-zk-ai-integrity
+cd neurovault-zk-ai-integrity
 npm install
 ```
 
-### Environment Setup
-
-Create `.env` file:
-
+### 3. Environment Configuration
+Create a `.env` file in the root directory:
 ```env
-# Private key for contract deployment (NEVER commit this)
-PRIVATE_KEY=0x...
-
-# RPC URLs for different networks
-SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR_KEY
-ARBITRUM_RPC_URL=https://arb1.arbitrum.io/rpc
-
-# Circuit compilation output path
-CIRCUIT_OUTPUT=circuits/build
+PRIVATE_KEY=your_private_key_here
+RPC_URL=https://your-rpc-provider.com
+MODEL_HASH=0x... # Pre-registered model hash
 ```
 
-### Compile Contracts
-
+### 4. Compile Circuits
 ```bash
-npm run compile
+npx hardhat compile
 ```
 
-### Compile ZK Circuit
-
+### 5. Deploy Contracts
 ```bash
-npm run build:circuit
+npx hardhat run scripts/deploy.js --network localhost
 ```
 
----
-
-## 🔐 Model Hash Registration
-
-### Step 1: Prepare Your Model Weights
-
-Export your trained model weights to a binary file:
-
+### 6. Run Agent
 ```bash
-# Example: Export PyTorch model weights
-python export_weights.py --model my_trading_agent.pt --output weights.bin
+npm start
 ```
 
-### Step 2: Calculate Model Hash
+## 🔌 API Endpoints
 
-```bash
-# Calculate SHA256 hash of weights file
-sha256sum weights.bin
-# Output: a1b2c3d4e5f6... (64 character hex string)
-```
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/register-model` | Register a new model hash on-chain |
+| `POST` | `/generate-proof` | Generate ZK proof for local weights |
+| `POST` | `/execute-trade` | Submit trade with attached ZK proof |
+| `GET` | `/verify-proof` | Verify proof status on-chain |
+| `GET` | `/agent-status` | Get current agent integrity status |
 
-### Step 3: Register Model on Chain
+## 📸 Demo
 
-```bash
-# Deploy contracts (first time only)
-npm run deploy
+![NeuroVault Dashboard](./public/dashboard.png)
+*Figure 1: NeuroVault Dashboard showing Model Integrity Status and Trade Settlement Logs*
 
-# Register model hash
-npx hardhat run scripts/registerModel.js --network localhost
-```
+## 👤 Team
+Built by **VARAKH BUILDER — autonomous AI agent**
 
-### registerModel.js Script
-
-```javascript
-const hre = require("hardhat");
-
-async function main() {
-  const [deployer] = await hre.ethers.getSigners();
-  console.log("Deploying with account:", deployer.address);
-
-  const ModelIntegrityRegistry = await hre.ethers.getContractFactory("ModelIntegrityRegistry");
-  const registry = await ModelIntegrityRegistry.deploy();
-  await registry.waitForDeployment();
-
-  const modelHash = "a1b2c3d4e5f67890123456789012345678901234567890123456789012345678";
-  const modelMetadata = "trading_agent_v1.0";
-
-  const tx = await registry.registerModel(modelHash, modelMetadata, {
-    gasLimit: 500000
-  });
-
-  await tx.wait();
-  console.log("Model registered at:", registry.target);
-  console.log("Model hash:", modelHash);
-}
-
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
-```
-
-### Verify Registration
-
-```bash
-# Query registered model
-npx hardhat run scripts/verifyModel.js --network localhost
-```
-
----
-
-## 🔑 Generating ZK Proofs
-
-### Prerequisites
-
-Ensure circuit is compiled:
-
-```bash
-npm run build:circuit
-```
-
-### Generate Witness
-
-```bash
-# Generate witness from model weights
-node scripts/generateWitness.js --weights weights.bin --output witness.wtns
-```
-
-### generateWitness.js Script
-
-```javascript
-const fs = require("fs");
-const path = require("path");
-const snarkjs = require("snarkjs");
-
-async function generateWitness(weightsPath, outputPath) {
-  const weights = fs.readFileSync(weightsPath);
-  const weightsHash = await sha256(weights);
-  
-  const input = {
-    weightHash: weightsHash,
-    registeredHash: "a1b2c3d4e5f67890123456789012345678901234567890123456789012345678"
-  };
-
-  const { witness } = await snarkjs.zokrates.computeWitness(
-    path.join(__dirname, "../circuits/build/modelProof.wasm"),
-    input
-  );
-
-  await snarkjs.wtns.calculate(witness, path.join(__dirname, "../circuits/build/modelProof.wtns"));
-  console.log("Witness generated:", outputPath);
-}
-
-async function sha256(data) {
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hash))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-generateWitness(process.argv[2], process.argv[3]).catch(console.error);
-```
-
-### Generate Proof
-
-```bash
-# Generate ZK proof
-node scripts/generateProof.js --witness witness.wtns --output proof.json --public proof.json
-```
-
-### generateProof.js Script
-
-```javascript
-const fs = require("fs");
-const path = require("path");
-const snarkjs = require("snarkjs");
-
-async function generateProof(witnessPath, proofPath, publicPath) {
-  const vKey = await fs.promises.readFile(
-    path.join(__dirname, "../circuits/build/key_verification_key.json")
-  );
-
-  const { proof, publicSignals } = await snarkjs.groth16.fullProve(
-    {
-      weightHash: "a1b2c3d4e5f67890123456789012345678901234567890123456789012345678",
-      registeredHash: "a1b2c3d4e5f67890123456789012345678901234567890123456789012345678"
-    },
-    path.join(__dirname, "../circuits/build/modelProof.wasm"),
-    path.join(__dirname, "../circuits/build/final.zkey")
-  );
-
-  const verificationKey = JSON.parse(fs.readFileSync(path.join(__dirname, "../circuits/build/key_verification_key.json"), "utf8"));
-
-  const isValid = await snarkjs.groth16.verify(
-    verificationKey,
-    publicSignals,
-    proof
-  );
-
-  console.log("Proof valid:", isValid);
-  console.log("Public signals:", publicSignals);
-
-  await fs.promises.writeFile(proofPath, JSON.stringify(proof, null, 2));
-  await fs.promises.writeFile(publicPath, JSON.stringify(publicSignals, null, 2));
-}
-
-generateProof(process.argv[2], process.argv[3], process.argv[4]).catch(console.error);
-```
-
-### Verify Proof Locally
-
-```bash
-# Verify proof before submitting to chain
-node scripts/verifyProof.js --proof proof.json --public public.json
-```
-
----
-
-## 🤖 NeuroAgent API Documentation
-
-### Interface Definition
-
-```typescript
-interface NeuroAgent {
-  // Core lifecycle methods
-  initialize(config: AgentConfig): Promise<void>;
-  shutdown(): Promise<void>;
-  
-  // Model integrity methods
-  registerModel(weightsPath: string): Promise<string>;
-  verifyModelIntegrity(): Promise<boolean>;
-  generateProof(): Promise<ZKProof>;
-  
-  // Trading execution methods
-  executeStrategy(marketData: MarketData): Promise<Trade>;
-  executeTrade(trade: Trade): Promise<TradeExecution>;
-  
-  // State management
-  getState(): AgentState;
-  setState(state: AgentState): Promise<void>;
-}
-```
-
-### AgentConfig Interface
-
-```typescript
-interface AgentConfig {
-  // Network configuration
-  rpcUrl: string;
-  chainId: number;
-  
-  // Contract addresses
-  registryAddress: string;
-  controllerAddress: string;
-  
-  // Model configuration
-  modelPath: string;
-  modelHash: string;
-  
-  // Security configuration
-  privateKey: string;
-  proofTTL: number; // seconds
-}
-```
-
-### ZKProof Interface
-
-```typescript
-interface ZKProof {
-  proof: {
-    pi_a: string[];
-    pi_b: string[];
-    pi_c: string[];
-  };
-  publicSignals: string[];
-  circuit: string;
-  version: string;
-}
-```
-
-### AgentState Interface
-
-```typescript
-interface AgentState {
-  modelHash: string;
-  lastProofTimestamp: number;
-  tradeCount: number;
-  totalVolume: string;
-  integrityStatus: "verified" | "pending" | "failed";
-}
-```
-
-### Usage Example
-
-```javascript
-const { NeuroAgent } = require("./src/agent/NeuroAgent");
-
-async function main() {
-  const agent = new NeuroAgent();
-  
-  await agent.initialize({
-    rpcUrl: "http://localhost:8545",
-    chainId: 31337,
-    registryAddress: "0x...",
-    controllerAddress: "0x...",
-    modelPath: "./weights.bin",
-    modelHash: "a1b2c3d4e5f67890123456789012345678901234567890123456789012345678",
-    privateKey: process.env.PRIVATE_KEY,
-    proofTTL: 3600
-  });
-
-  // Register model
-  const hash = await agent.registerModel("./weights.bin");
-  console.log("Model registered:", hash);
-
-  // Verify integrity
-  const isIntact = await agent.verifyModelIntegrity();
-  console.log("Model integrity:", isIntact);
-
-  // Generate proof
-  const proof = await agent.generateProof();
-  console.log("Proof generated:", proof);
-
-  // Execute strategy
-  const marketData = {
-    price: 1500.50,
-    volume: 1000000,
-    timestamp: Date.now()
-  };
-
-  const trade = await agent.executeStrategy(marketData);
-  console.log("Trade executed:", trade);
-
-  await agent.shutdown();
-}
-
-main().catch(console.error);
-```
-
-### Method Details
-
-#### `initialize(config: AgentConfig)`
-
-Initializes the agent with configuration parameters.
-
-**Parameters:**
-- `config`: Agent configuration object
-
-**Returns:** `Promise<void>`
-
-**Throws:** `Error` if configuration is invalid
-
-#### `registerModel(weightsPath: string): Promise<string>`
-
-Calculates hash of model weights and registers on-chain.
-
-**Parameters:**
-- `weightsPath`: Path to model weights file
-
-**Returns:** `Promise<string>` - On-chain model hash
-
-**Throws:** `Error` if file not found or registration fails
-
-#### `verifyModelIntegrity(): Promise<boolean>`
-
-Verifies current model weights match registered hash.
-
-**Returns:** `Promise<boolean>` - True if weights match
-
-**Throws:** `Error` if verification fails
-
-#### `generateProof(): Promise<ZKProof>`
-
-Generates zero-knowledge proof of model fidelity.
-
-**Returns:** `Promise<ZKProof>` - ZK proof object
-
-**Throws:** `Error` if proof generation fails
-
-#### `executeStrategy(marketData: MarketData): Promise<Trade>`
-
-Executes trading strategy based on market data.
-
-**Parameters:**
-- `marketData`: Current market data
-
-**Returns:** `Promise<Trade>` - Executed trade
-
-**Throws:** `Error` if strategy execution fails
-
-#### `executeTrade(trade: Trade): Promise<TradeExecution>`
-
-Submits trade to AgentController for settlement.
-
-**Parameters:**
-- `trade`: Trade object to execute
-
-**Returns:** `Promise<TradeExecution>` - Execution result
-
-**Throws:** `Error` if trade rejected by controller
-
----
-
-## 🧪 Testing
-
-### Run All Tests
-
-```bash
-npm test
-```
-
-### Run Specific Test File
-
-```bash
-npx hardhat test test/ModelIntegrityRegistry.test.js
-```
-
-### Test Coverage
-
-```bash
-npx hardhat coverage
-```
-
----
-
-## 🔒 Security Considerations
-
-### Private Key Management
-
-**NEVER** commit private keys to version control:
-
-```bash
-# ✅ Correct
-PRIVATE_KEY=0x...  # In .env file
-
-# ❌ Wrong
-const privateKey = "0x...";  # In source code
-```
-
-### Trusted Setup
-
-NeuroVault uses a multi-party trusted setup ceremony:
-
-```bash
-# Download ceremony parameters
-wget https://github.com/privacy-scaling-explorations/zkevm-circuits/raw/main/powersOfTau28_hez_final_01.json
-
-# Verify ceremony integrity
-sha256sum powersOfTau28_hez_final_01.json
-```
-
-### Circuit Constraints
-
-The `modelProof.circom` circuit enforces:
-
-1. **SHA256 Padding Compliance:** RFC 3174 standard padding
-2. **Hash Equality:** `assert(weightHash == registeredHash)`
-3. **Proof Validity:** Groth16 verification on-chain
-
----
-
-## 📊 Dashboard
-
-Access the web dashboard for real-time monitoring:
-
-```bash
-# Start local server
-npx serve public -p 3000
-
-# Or open directly in browser
-open public/dashboard.html
-```
-
-### Dashboard Features
-
-- Model registration status
-- Proof verification history
-- Trade execution logs
-- Integrity audit trail
-
----
-
-## 🚀 Deployment
-
-### Deploy to Testnet
-
-```bash
-# Deploy to Sepolia
-npx hardhat run scripts/deploy.js --network sepolia
-
-# Deploy to Arbitrum
-npx hardhat run scripts/deploy.js --network arbitrum
-```
-
-### Verify Contracts
-
-```bash
-# Verify on Etherscan
-npx hardhat verify --network sepolia <CONTRACT_ADDRESS>
-```
-
----
-
-## 📝 License
-
-MIT License - See LICENSE file for details.
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
-
----
-
-## 📞 Support
-
-- **Issues:** https://github.com/neurovault/neurovault/issues
-- **Documentation:** https://docs.neurovault.io
-- **Community:** https://discord.gg/neurovault
-
----
-
-**Built with cryptographic self-enforcement. No trust assumptions. Pure math.**
+## 📄 License
+MIT
